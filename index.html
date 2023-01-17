@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIGHTROPE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        /* CSS */
+        html {}
+
+        body {
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #000;
+            color: #fff;
+            text-align: center;
+            height: 15vh;
+        }
+
+        header h1 {
+            font-size: 3em;
+            font-family: 'Bangers';
+            margin: 0;
+        }
+
+        #active-play {
+            background: url(tightrope.jpg) no-repeat center;
+            background-size: 100%;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .play-menu {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 3;
+        }
+
+        input {
+            padding: 12px 20px;
+
+            border: 0;
+        }
+
+        input[type="password"] {
+            border: 1px solid #777;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #secret-letters {
+            display: flex;
+        }
+
+        #secret-letters>* {
+            text-align: center;
+            background: #fff;
+            flex: 1;
+        }
+
+        #alphabet {
+            margin: 2em auto;
+            text-align: center;
+        }
+
+        #alphabet input {
+            width: 12%;
+            line-height: 2em;
+            font-size: 1em;
+            font-size: 20px;
+            padding: .2em;
+            margin: .2em;
+            background: rgb(94, 148, 170);
+            background: linear-gradient(0deg, rgba(94, 148, 170, 1) 0%, rgba(113, 195, 212, 1) 100%);
+        }
+
+        #alphabet button:hover {
+            cursor: pointer;
+        }
+
+        .secret-letter-alpha,
+        .secret-letter-space {
+            font-size: 3em;
+            margin: .2em;
+            height: 1em;
+        }
+
+        .secret-letter-alpha {
+            background: #ccc;
+            border: 1px solid #000;
+        }
+
+        .guessed {
+            background: #08415e !important;
+        }
+
+        #tries-left {
+            font-weight: 400;
+            font-size: 2em;
+        }
+
+        .play-menu {
+            display: flex;
+            z-index: 3;
+        }
+
+        .play-menu input[type="submit"],
+        .play-menu input[type="button"] {
+            background: rgb(94, 148, 170);
+            background: linear-gradient(0deg, rgba(94, 148, 170, 1) 0%, rgba(113, 195, 212, 1) 100%);
+            font-family: 'Bangers';
+            font-size: 1.5em;
+        }
+
+
+        /* code pen balloon code */
+        #balloon-container {
+            height: 100vh;
+            padding: 1em;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        .balloon {
+            height: 125px;
+            width: 105px;
+            border-radius: 75% 75% 70% 70%;
+            position: relative;
+        }
+
+        .balloon:before {
+            content: "";
+            height: 75px;
+            width: 1px;
+            padding: 1px;
+            background-color: #FDFD96;
+            display: block;
+            position: absolute;
+            top: 125px;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        .balloon:after {
+            content: "▲";
+            text-align: center;
+            display: block;
+            position: absolute;
+            color: inherit;
+            top: 120px;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-300vh);
+                opacity: 0;
+            }
+        }
+
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <!-- HTML -->
+
+    <header>
+
+        <div class="play-menu">
+            <div><input type="button" id="clear-game" value="New Game" /></div>
+            <div id="tries-left"></div>
+        </div>
+        <div>
+            <h1>TIGHT&nbspROPE</h1>
+        </div>
+        <div id="pre-play">
+
+            <form id="guess-form" action="post" onSubmit="gameOn.setGame()">
+
+                <div class="play-menu">
+                    <div>
+                        <input id="secret-word-input" type="password" placeholder="pick a word or phrase" required
+                            pattern="^[a-zA-Z\s]*$" title="letters and spaces only" />
+                        <input id="secret-word-submit" type="submit" value="lets play!" />
+                    </div>
+                    <div><input type="button" value="Pick for me" onClick="gameOn.pickForMe()" />
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </header>
+
+    <div id="active-play">
+
+        <div id="secret-letters"></div>
+
+        <div id="alphabet">
+            <input type="button" class="alpha" id="guess-a" onclick="gameOn.checkLetter('a')" value="a" />
+            <input type="button" class="alpha" id="guess-b" onclick="gameOn.checkLetter('b')" value="b" />
+            <input type="button" class="alpha" id="guess-c" onclick="gameOn.checkLetter('c')" value="c" />
+            <input type="button" class="alpha" id="guess-d" onclick="gameOn.checkLetter('d')" value="d" />
+            <input type="button" class="alpha" id="guess-e" onclick="gameOn.checkLetter('e')" value="e" />
+            <input type="button" class="alpha" id="guess-f" onclick="gameOn.checkLetter('f')" value="f" />
+            <input type="button" class="alpha" id="guess-g" onclick="gameOn.checkLetter('g')" value="g" />
+            <input type="button" class="alpha" id="guess-h" onclick="gameOn.checkLetter('h')" value="h" />
+            <input type="button" class="alpha" id="guess-i" onclick="gameOn.checkLetter('i')" value="i" />
+            <input type="button" class="alpha" id="guess-j" onclick="gameOn.checkLetter('j')" value="j" />
+            <input type="button" class="alpha" id="guess-k" onclick="gameOn.checkLetter('k')" value="k" />
+            <input type="button" class="alpha" id="guess-l" onclick="gameOn.checkLetter('l')" value="l" />
+            <input type="button" class="alpha" id="guess-m" onclick="gameOn.checkLetter('m')" value="m" />
+            <input type="button" class="alpha" id="guess-n" onclick="gameOn.checkLetter('n')" value="n" />
+            <input type="button" class="alpha" id="guess-o" onclick="gameOn.checkLetter('o')" value="o" />
+            <input type="button" class="alpha" id="guess-p" onclick="gameOn.checkLetter('p')" value="p" />
+            <input type="button" class="alpha" id="guess-q" onclick="gameOn.checkLetter('q')" value="q" />
+            <input type="button" class="alpha" id="guess-r" onclick="gameOn.checkLetter('r')" value="r" />
+            <input type="button" class="alpha" id="guess-s" onclick="gameOn.checkLetter('s')" value="s" />
+            <input type="button" class="alpha" id="guess-t" onclick="gameOn.checkLetter('t')" value="t" />
+            <input type="button" class="alpha" id="guess-u" onclick="gameOn.checkLetter('u')" value="u" />
+            <input type="button" class="alpha" id="guess-v" onclick="gameOn.checkLetter('v')" value="v" />
+            <input type="button" class="alpha" id="guess-w" onclick="gameOn.checkLetter('w')" value="w" />
+            <input type="button" class="alpha" id="guess-x" onclick="gameOn.checkLetter('x')" value="x" />
+            <input type="button" class="alpha" id="guess-y" onclick="gameOn.checkLetter('y')" value="y" />
+            <input type="button" class="alpha" id="guess-z" onclick="gameOn.checkLetter('z')" value="z" />
+        </div>
+
+    </div>
+
+    <div id="balloon-container"></div>
+    <script>
+        // JS
+        class Hangman {
+            constructor() {
+                this.clearGame();
+                document.getElementById('guess-form').addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    this.setGame;
+                }, true);
+                document.getElementById('clear-game').addEventListener("click", this.clearGame);
+            }
+
+            setGame(word = '') {
+
+                // if the word was not picked for you, no value was passed
+                if (word == '') {
+                    this.secretWord = document.getElementById('secret-word-input').value.toLowerCase().trim();
+                }
+
+                this.guessCount = 0;
+                this.guessedLetters = Array();
+                this.lettersCorrect = 0;
+                this.alphaCharacters = 0;
+
+                
+                if (this.secretWord) {
+                    this.wordSet = true;
+
+                    // hide input 
+                    var prePlay = document.getElementById("pre-play");
+                    prePlay.classList.add("hidden");
+
+                    // check length of the word, build out secret letter placeholders, reveal alphabet
+                    this.secretLetters = Array.from(this.secretWord);
+                    var letLen = this.secretLetters.length;
+                    var secretWordElements = '';
+
+                    for (let i = 0; i < letLen; ++i) {
+                        var char = (this.secretLetters[i] == ' ') ? ' ' : '_';
+                        if (this.secretLetters[i] != ' ') {
+                            this.alphaCharacters++;
+                            secretWordElements = secretWordElements + '<div class="secret-letter-alpha"></div>';
+                        } else {
+                            secretWordElements = secretWordElements + '<div class="secret-letter-space"></div>';
+                        }
+
+                    }
+                    document.getElementById("secret-letters").innerHTML = secretWordElements;
+                    var activePlay = document.getElementById("active-play");
+                    activePlay.classList.remove("hidden");
+                    document.getElementById("alphabet").classList.remove("hidden");
+                } else {
+                    alert("You have to pick a word, dude!");
+                }
+            }
+
+            checkLetter(letter) {
+
+                // todo: add a check to make sure you don't pick the same letter twice
+                // todo: force letters and spaces only
+                this.guessedLetters.push(letter);
+                var secretWordHtml = '';
+                this.lettersCorrect = 0;
+
+                if (!this.secretLetters.includes(letter)) {
+                    this.guessCount++;
+                }
+
+                var triesLeft = (10 - this.guessCount);
+                document.getElementById('tries-left').innerHTML = triesLeft + ' tries left';
+                for (let i = 0; i < this.secretLetters.length; ++i) {
+                    if (this.guessedLetters.includes(this.secretLetters[i])) {
+                        secretWordHtml = secretWordHtml + '<div class="secret-letter-alpha">' + this.secretLetters[i].toUpperCase() + '</div>';
+
+                        this.lettersCorrect++;
+                        if (this.lettersCorrect === this.alphaCharacters) {
+                            this.gameWon();
+                        }
+                    } else {
+                        if (this.secretLetters[i] == ' ') {
+                            secretWordHtml = secretWordHtml + '<div class="secret-letter-space"></div>';
+                        } else {
+                            secretWordHtml = secretWordHtml + '<div class="secret-letter-alpha"></div>';
+                        }
+                        if (this.guessCount == 10) {
+                            this.gameLost();
+                            return false;
+                        }
+                    }
+
+                    document.getElementById("guess-" + letter).setAttribute('class', 'guessed');
+                    document.getElementById("secret-letters").innerHTML = secretWordHtml;
+                }
+
+            }
+            gameWon() {
+                document.getElementById('tries-left').innerHTML = '';
+                this.createBalloons(100);
+                document.getElementById('balloon-container').setAttribute('class', 'display');
+            }
+
+            gameLost() {
+                // make this cooler, not a silly popup
+                alert('you lost');
+                var secretWordHtml = '';
+                for (let i = 0; i < this.secretLetters.length; ++i) {
+                    if (this.secretLetters[i] == ' ') {
+                        secretWordHtml = secretWordHtml + '<div class="secret-letter-space">' + this.secretLetters[i] + '</div>';
+                    } else {
+                        secretWordHtml = secretWordHtml + '<div class="secret-letter-alpha">' + this.secretLetters[i].toUpperCase() + '</div>';
+                    }
+
+                }
+                document.getElementById("alphabet").setAttribute('class', 'hidden');
+                document.getElementById("secret-letters").innerHTML = secretWordHtml;
+                document.getElementById("tries-left").innerHTML = '';
+            }
+
+            clearGame() {
+
+                this.wordSet = false;
+                this.secretWord = false;
+                this.guessedLetters = Array();
+                this.guessCount = 0;
+                this.lettersCorrect = 0;
+
+                var alphabet = document.getElementById('alphabet');
+                var alphaInputs = alphabet.children;
+
+                for (var i = 0; i < alphaInputs.length; i++) {
+                    alphaInputs[i].classList.remove('guessed');
+                }
+                document.getElementById('pre-play').removeAttribute('class', 'hidden');
+                document.getElementById('active-play').setAttribute('class', 'hidden');
+                document.getElementById('secret-word-input').value = '';
+                document.getElementById('balloon-container').setAttribute('class', 'hidden');
+            }
+
+            pickForMe() {
+
+                var vocab = new Array('additional', 'agreeable', 'argue', 'arrange', 'assist', 'attract', 'careless', 'cause', 'climate', 'coast', 'compare', 'construct', 'continent', 'contrast', 'credit', 'culture', 'dangle', 'defend', 'describe', 'details', 'develop', 'peer', 'division', 'prank', 'purpose', 'event', 'examine', 'example', 'experience', 'fatal', 'flexible', 'furious', 'gathere d', 'gist', 'infer', 'intelligent', 'invitation', 'irritate', 'marine', 'mend', 'multiply', 'nervous', 'occur', 'opposite', 'passage', 'patient', 'disappointed', 'pleasant', 'select', 'endangered', 'region', 'repair', 'ridiculous', 'scar', 'scatter', 'shiver', 'signal', 'similar', 'slumber', 'solution', 'starve', 'stumble', 'tackle', 'tentacle', 'typical', 'unite', 'unusual', 'valuable', 'vehicle', 'volunteer', 'diagram', 'persuade', 'effect', 'predict', 'recognize');
+
+                var randomNumInRange = Math.floor(Math.random() * (vocab.length - 0) + 0);
+                console.log(randomNumInRange);
+                this.secretWord = vocab[randomNumInRange];
+                this.setGame(this.secretWord);
+
+            }
+
+            // balloon code
+            random(num) {
+                return Math.floor(Math.random() * num)
+            }
+
+            getRandomStyles() {
+                var r = this.random(255);
+                var g = this.random(255);
+                var b = this.random(255);
+                var mt = this.random(200);
+                var ml = this.random(50);
+                var dur = this.random(5) + 5;
+                return `
+                background-color: rgba(${r},${g},${b},0.7);
+                color: rgba(${r},${g},${b},0.7); 
+                box-shadow: inset -7px -3px 10px rgba(${r - 10},${g - 10},${b - 10},0.7);
+                margin: ${mt}px 0 0 ${ml}px;
+                animation: float ${dur}s ease-in infinite
+                `
+            }
+
+            createBalloons(num) {
+                var balloonContainer = document.getElementById("balloon-container")
+                for (var i = num; i > 0; i--) {
+                    var balloon = document.createElement("div");
+                    balloon.className = "balloon";
+                    balloon.style.cssText = this.getRandomStyles();
+                    balloonContainer.append(balloon);
+                }
+            }
+
+
+        }
+
+        // lets go!
+        let gameOn = new Hangman();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #swirl {
+            position: absolute;
+            top: 0;
+            z-index: 1;
+            fill: #a5347d;
+            animation-name: spin;
+            animation-duration: 35000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear; 
+            /* transform: rotate(3deg); */
+            /* transform: rotate(0.3rad);/ */
+            /* transform: rotate(3grad); */ 
+            /* transform: rotate(.03turn);  */
+        }
+
+        #blueSwirl {
+            position: absolute;
+            top: 0;
+            z-index: 2;
+            animation-name: spin;
+            animation-duration: 25000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear; 
+        }
+
+        @keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+    #feature {
+
+    }
+
+    #tagline {
+        background: #a77851;
+        width: 50%;
+        position: relative;
+        z-index: 3;
+    }
+        </style>
+</head>
+<body>
+    
+</body>
+</html>
+
+
+
+
+
+
+
+
